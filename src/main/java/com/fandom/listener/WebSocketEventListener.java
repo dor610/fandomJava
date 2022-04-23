@@ -1,5 +1,6 @@
 package com.fandom.listener;
 
+import com.fandom.controller.WebSocketController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -29,9 +30,9 @@ public class WebSocketEventListener {
         if(username != null) {
             logger.info("User Disconnected : " + username);
 
-            //WebSocketController.activeUser.remove(username);
+            WebSocketController.activeUser.remove(username);
 
-            //WebSocketController.simpMessagingTemplate.convertAndSend("/topic/disconnect", username);
+            WebSocketController.simpMessagingTemplate.convertAndSend("/topic/disconnect", username);
         }
     }
 

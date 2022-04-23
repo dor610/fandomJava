@@ -1,5 +1,5 @@
 package com.fandom.model;
 
 public enum PostState {
-    PENDING, APPROVED, BLOCKED, DELETED
+    CREATED ,PENDING, APPROVED, LOCKED, DELETED, UPDATED
 }

@@ -1,5 +1,6 @@
 package com.fandom.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,33 +16,66 @@ public class Post {
     private String postContent;
     private String author;
     private String timestamp;
-    private Media[] media;
+    private Media[] images;
+    private Media video;
     private PostType type;
     private PostState state;
 
     public Post(){};
 
-    public Post(String id, String title, String postContent, String author, String timestamp, Media[] media, PostType type, PostState state) {
+    public Post(String id, String title, String postContent, String author, String timestamp, Media[] images, Media video, PostType type, PostState state) {
         this.id = id;
         this.title = title;
         this.postContent = postContent;
         this.author = author;
         this.timestamp = timestamp;
-        this.media = media;
+        this.images = images;
+        this.video = video;
         this.type = type;
         this.state = state;
     }
 
-    public Post(String title, String postContent, String author, Media[] media, PostType type) {
+    //images and video post
+    public Post(String title, String postContent, String author, Media[] images, Media video) {
+        ObjectId id = new ObjectId();
+        this.id = "post_"+id.toString();
         this.title = title;
         this.postContent = postContent;
         this.author = author;
         this.timestamp = System.currentTimeMillis() + "";
-        this.media = media;
-        this.type = type;
+        this.images = images;
+        this.video = video;
+        this.type = PostType.IMAGE_VIDEO;
         this.state = PostState.PENDING;
     }
 
+    //video only post
+    public Post(String title, String postContent, String author, Media video) {
+        ObjectId id = new ObjectId();
+        this.id = "post_"+id.toString();
+        this.title = title;
+        this.postContent = postContent;
+        this.author = author;
+        this.timestamp = System.currentTimeMillis() + "";
+        this.video = video;
+        this.type = PostType.VIDEO;
+        this.state = PostState.PENDING;
+    }
+
+    //image only post
+    public Post(String title, String postContent, String author, Media[] images) {
+        ObjectId id = new ObjectId();
+        this.id = "post_"+id.toString();
+        this.title = title;
+        this.postContent = postContent;
+        this.author = author;
+        this.timestamp = System.currentTimeMillis() + "";
+        this.images = images;
+        this.type = PostType.IMAGE;
+        this.state = PostState.PENDING;
+    }
+
+    //text only post
     public Post(String title, String postContent, String author){
         this.title = title;
         this.postContent = postContent;
@@ -83,14 +117,6 @@ public class Post {
         this.timestamp = timestamp;
     }
 
-    public Media[] getMedia() {
-        return media;
-    }
-
-    public void setMedia(Media[] media) {
-        this.media = media;
-    }
-
     public PostType getType() {
         return type;
     }
@@ -113,5 +139,21 @@ public class Post {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Media[] getImages() {
+        return images;
+    }
+
+    public void setImages(Media[] images) {
+        this.images = images;
+    }
+
+    public Media getVideo() {
+        return video;
+    }
+
+    public void setVideo(Media video) {
+        this.video = video;
     }
 }

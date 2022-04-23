@@ -1,5 +1,6 @@
 package com.fandom.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -39,6 +40,8 @@ public class Message {
     }
 
     public Message(String chatId, String sender, String recipient, String message) {
+        ObjectId id = new ObjectId();
+        this.id = "message_"+id.toString();
         this.chatId = chatId;
         this.sender = sender;
         this.recipient = recipient;
@@ -51,6 +54,8 @@ public class Message {
     }
 
     public Message(String chatId, String sender, String recipient, String message, Media[] images){
+        ObjectId id = new ObjectId();
+        this.id = "message_"+id.toString();
         this.chatId = chatId;
         this.sender = sender;
         this.recipient = recipient;

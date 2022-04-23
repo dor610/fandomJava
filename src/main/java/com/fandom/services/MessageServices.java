@@ -2,6 +2,7 @@ package com.fandom.services;
 
 import com.fandom.model.Message;
 import com.fandom.model.MessageState;
+import com.fandom.model.MessageType;
 import com.fandom.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MessageServices {
@@ -30,15 +33,28 @@ public class MessageServices {
 
     }
 
-    public List<Message> viewMessage(String sender, String recipient, int page){
-            List<Message> messages = new ArrayList<>();
+    public Map<String, Message> viewMessage(String chatId, String account,int page){
             Pageable paging = PageRequest.of(page, 15);
-
-            String chatId = Message.generateChatId(sender, recipient);
             Page<Message> messagePage = mesRepo.findByChatId(chatId, paging);
+            Map<String, Message> map = new HashMap();
+            for(Message message: messagePage.getContent()){
+                if(message.getSender().equals(account)){
+                    if(!message.getSenderState().equals(MessageState.REMOVED))
+                        map.put(message.getId(), message);
+                }else map.put(message.getId(), message);
+            }
+            return map;
+    }
 
-            messages = messagePage.getContent();
-            return messages;
+    public Map<String, Message> viewNotification(String recipient, int page){
+        Pageable pageable = PageRequest.of(page, 15);
+        Page<Message> mesPage = mesRepo.findByRecipientAndType(recipient, MessageType.NOTIFICATION, pageable);
+        Map<String, Message> map = new HashMap<>();
+        for (Message noti: mesPage.getContent()){
+            map.put(noti.getId(), noti);
+        }
+
+        return  map;
     }
 
     public void deleteMessage(String id, String account){

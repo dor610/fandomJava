@@ -3,6 +3,7 @@ package com.fandom.controller;
 import com.dropbox.core.DbxException;
 import com.fandom.model.Post;
 import com.fandom.model.PostType;
+import com.fandom.services.PostLogServices;
 import com.fandom.services.PostServices;
 import com.fandom.util.DropboxUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
 public class PostController {
 
     private PostServices postServices;
+
 
     @Autowired
     public PostController(PostServices postServices) {
@@ -30,14 +33,10 @@ public class PostController {
 
     //get posts, 10 per time
     @GetMapping("/post/{page}") //
-    public ResponseEntity<List<Post>> getPosts(@PathVariable("page") String pageStr){
+    public ResponseEntity<Map<String, Post>> getPosts(@PathVariable("page") String pageStr){
         int page = Integer.parseInt(pageStr);
-        List<Post> posts = postServices.getPosts(page);
-        if(posts != null){
-            return new ResponseEntity<>(posts, HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
+        Map<String,Post> posts = postServices.getPosts(page);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
     //get post by id
@@ -50,19 +49,18 @@ public class PostController {
 
     //get posts by author, 10 per time
     @GetMapping("/post/author/{author}/{page}") //
-    public ResponseEntity<List<Post>> getPostByAuthor(@PathVariable("author") String author, @PathVariable("page") String pageStr){
+    public ResponseEntity<Map<String,Post>> getPostByAuthor(@PathVariable("author") String author, @PathVariable("page") String pageStr){
         int page = Integer.parseInt(pageStr);
-        List<Post> posts = postServices.getPostsByAuthor(author, page);
-        if (posts == null) return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        Map<String,Post> posts = postServices.getPostsByAuthor(author, page);
+        if (posts.size() == 0) return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
-    //get pending posts, 10 per time
-    @GetMapping("/post/pending/{page}") //
-    public ResponseEntity<List<Post>> getPendingPost(@PathVariable("page") String pageStr){
+    //get pending posts, 10 per time //
+    @GetMapping("/post/pending/{page}")
+    public ResponseEntity<Map<String, Post>> getPendingPost(@PathVariable("page") String pageStr){
         int page = Integer.parseInt(pageStr);
-        List<Post> posts = postServices.getPendingPosts(page);
-        if (posts == null) return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        Map<String, Post> posts = postServices.getPendingPosts(page);
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
@@ -73,12 +71,11 @@ public class PostController {
         return new ResponseEntity(count, HttpStatus.OK);
     }
 
-    //get blocked posts, 10 per time
-    @GetMapping("/post/blocked/{page}") //
-    public ResponseEntity<List<Post>> getBlockedPost(@PathVariable("page") String pageStr){
+    //get locked posts, 10 per time
+    @GetMapping("/post/locked/{page}") //
+    public ResponseEntity<Map<String,Post>> getLockedPost(@PathVariable("page") String pageStr){
         int page = Integer.parseInt(pageStr);
-        List<Post> posts = postServices.getBlockedPosts(page);
-        if (posts == null) return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        Map<String, Post> posts = postServices.getLockedPosts(page);
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
@@ -98,23 +95,31 @@ public class PostController {
 
     //update video post, used by author
 
-    //approval post, used by admin
+    //approval post, used by admin //
     @PostMapping("/post/approval/{postId}")
     public ResponseEntity<String> approvalPost(@PathVariable("postId") String id){
         if(postServices.approval(id)) return new ResponseEntity<>(HttpStatus.OK);
         else return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    //block post, used by admin
-    @PostMapping("/post/blocked/{postId}")
-    public ResponseEntity<String> blockPost(@PathVariable("postId") String id){
-        if(postServices.block(id)) return new ResponseEntity<>(HttpStatus.OK);
-        else return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    //lock post, used by admin
+    @PostMapping("/post/locked")
+    public ResponseEntity<String> lockPost(@RequestParam("postId") String id, @RequestParam("note") String note){
+        System.out.println("hihihi");
+        if(postServices.lockPost(id, note)) return new ResponseEntity<>(HttpStatus.OK);
+        else return new ResponseEntity<>("Bị lỗi gì đó",HttpStatus.INTERNAL_SERVER_ERROR);
     }
     //delete post, used by admin
-    @PostMapping("/post/delete/{postId}")
-    public ResponseEntity<String> deletePost(@PathVariable("postId") String id){
-        if(postServices.delete(id)) return new ResponseEntity<>(HttpStatus.OK);
+    @PostMapping("/post/delete")
+    public ResponseEntity<String> deletePost(@RequestParam("postId") String id, @RequestParam("note") String note){
+        if(postServices.delete(id, note)) return new ResponseEntity<>(HttpStatus.OK);
         else return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //unlock post, used by admin
+    @PostMapping("/post/unlock/{postId}")
+    public ResponseEntity<String> unlockPost(@PathVariable("postId") String id){
+        if(postServices.unlock(id)) return  new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     //create text post -- done
@@ -128,10 +133,10 @@ public class PostController {
 
     //create img post
     @PostMapping("/post/create/img")
-    public ResponseEntity<String> createImgPost(@RequestParam("images") MultipartFile[] files, @RequestParam("author") String author,
-                                                @RequestParam("content") String content, @RequestParam("title") String title){
+    public ResponseEntity<String> createImgPost(@RequestParam("images") MultipartFile[] images, @RequestParam("imgDesciption") String[] descriptions,
+                                                @RequestParam("author") String author, @RequestParam("content") String content, @RequestParam("title") String title){
         try{
-            postServices.createImagePost(files,author, content, title);
+            postServices.createImagePost(images, descriptions, author, content, title);
             return new ResponseEntity<>(HttpStatus.OK);
         }catch (IOException | DbxException e){
             System.out.println(e.getStackTrace().toString());
@@ -141,14 +146,30 @@ public class PostController {
 
     //create video post
     @PostMapping("/post/create/video")
-    public ResponseEntity<String> createVideoPost(@RequestParam("video")MultipartFile file, @RequestParam("author") String author,
-                                                @RequestParam("content") String content, @RequestParam("title") String title){
+    public ResponseEntity<String> createVideoPost(@RequestParam("video")MultipartFile video, @RequestParam("videoDescription") String description,
+                                                  @RequestParam("author") String author, @RequestParam("content") String content,
+                                                  @RequestParam("title") String title){
         try{
-            postServices.createVideoPost(file,author, content, title);
+            postServices.createVideoPost(video, description,author, content, title);
             return new ResponseEntity<>(HttpStatus.OK);
         }catch (IOException | DbxException e){
             System.out.println(e.getStackTrace());
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    //create img and video post
+    @PostMapping("/post/create/img_video")
+    public ResponseEntity<String> createImgAndVIdeoPost(@RequestParam("images") MultipartFile[] images, @RequestParam("imgDesciption") String[] imgDescriptions,
+                                                        @RequestParam("video")MultipartFile video, @RequestParam("videoDescription") String description,
+                                                        @RequestParam("author") String author, @RequestParam("content") String content, @RequestParam("title") String title){
+        try {
+            postServices.createImageAndVideoPost(images,imgDescriptions,video, description, author, content, title);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }catch (IOException | DbxException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }

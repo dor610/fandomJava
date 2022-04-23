@@ -17,9 +17,16 @@ public interface PostRepository extends MongoRepository<Post, String> {
     @Query(value = "{'_id': ?0}")
     public Post findPost(String id);
 
+    @Query(value = "{'author': ?0, state: ?1}", sort = "{'timestamp': -1}")
+    public Page<Post> getPostByAuthorAndState(String author, PostState state, Pageable pageable);
+
+    @Query(value = "{'state': ?0}", sort = "{'timestamp}: -1")
+    public Page<Post> getPostByState(PostState state, Pageable pageable);
+
+
     public List<Post> findPostsByAuthor(String author);
 
-    public Page<Post> findPostsByState(PostState state, Pageable pageable);
+    //public Page<Post> findPostsByState(PostState state, Pageable pageable);
 
     public int countPostsByAuthorAndState(String author, PostState state);
 }

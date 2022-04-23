@@ -16,31 +16,34 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PostServices {
 
     private PostRepository postRepository;
+    private PostLogServices pls;
 
     @Autowired
-    public PostServices(PostRepository postRepository){
+    public PostServices(PostRepository postRepository, PostLogServices pls){
+        this.pls = pls;
         this.postRepository = postRepository;
     }
 
-    public List<Post> getPosts(int page){
+    //lấy nhiều post đã được duyệt từ mới tới cũ
+    public Map<String,Post> getPosts(int page){
         Pageable pageable = PageRequest.of(page, 1);
 
-        Page<Post> posts = postRepository.findPostsByState(PostState.APPROVED, pageable);
+        Page<Post> posts = postRepository.getPostByState(PostState.APPROVED, pageable);
 
-        List<Post> postList = posts.getContent();
-
-        return postList;
+        Map<String, Post> map = new HashMap();
+        for(Post p: posts.getContent()){
+            map.put(p.getId(), p);
+        }
+        return map;
     }
 
+    //lấy một post theo id
     public Post getPost(String id){
         //Post post = postRepository.findPost(id);
         //return post;
@@ -48,31 +51,54 @@ public class PostServices {
         return postOptional.orElse(null);
     }
 
-    public List<Post> getPostsByAuthor(String author, int page){
-        Pageable pageable = PageRequest.of(page, 10);
+    //lấy post by tác giả
+    public Map<String, Post> getPostsByAuthor(String author, int page){
+        Pageable pageable = PageRequest.of(page, 1);
         Page<Post> postPage = postRepository.findPostsByAuthor(author, pageable);
-        return postPage.getContent();
+        Map<String, Post> map = new HashMap();
+        for(Post p: postPage.getContent()){
+            map.put(p.getId(), p);
+        }
+        return map;
     }
 
-    public List<Post> getPostsByAuthor(String author){
-        List<Post> posts = postRepository.findPostsByAuthor(author);
-        return posts;
-    }
-
-    public List<Post> getPendingPosts(int page){
+    //lấy các post theo state và theo tác giả
+    public Map<String, Post> getLockedPostByAuthor(String author, PostState state, int page){
         Pageable pageable = PageRequest.of(page, 10);
-        Page<Post> posts = postRepository.findPostsByState(PostState.PENDING, pageable);
-        return posts.getContent();
+        Page<Post> postPage = postRepository.getPostByAuthorAndState(author, state, pageable);
+        Map<String, Post> map = new HashMap();
+        for(Post p: postPage.getContent()){
+            map.put(p.getId(), p);
+        }
+        return map;
+    }
+
+    public Map<String,Post> getPendingPosts(int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Post> posts = postRepository.getPostByState(PostState.PENDING, pageable);
+        Map<String, Post> map = new HashMap<>();
+        if(posts.getContent().size() > 0){
+            for(Post p: posts.getContent()){
+                map.put(p.getId(), p);
+            }
+        }
+        return map;
     }
 
     public int countPedingPostsByAuthor(String author){
         return postRepository.countPostsByAuthorAndState(author, PostState.PENDING);
     }
 
-    public List<Post> getBlockedPosts(int page){
+    public Map<String,Post> getLockedPosts(int page){
         Pageable pageable = PageRequest.of(page, 10);
-        Page<Post> posts = postRepository.findPostsByState(PostState.BLOCKED, pageable);
-        return posts.getContent();
+        Page<Post> posts = postRepository.getPostByState(PostState.LOCKED, pageable);
+        Map<String, Post> map = new HashMap<>();
+        if(posts.getContent().size() > 0){
+            for(Post p: posts.getContent()){
+                map.put(p.getId(), p);
+            }
+        }
+        return map;
     }
 
     public boolean approval(String id){
@@ -81,52 +107,96 @@ public class PostServices {
             Post post = postContainer.get();
             post.setState(PostState.APPROVED);
             postRepository.save(post);
+            pls.writeLog(id, PostState.APPROVED, "Được đuyệt");
             return true;
         }else return false;
     }
 
-    public boolean block(String id){
+    public boolean lockPost(String id, String note){
         Optional<Post> postContainer = postRepository.findById(id);
         if(postContainer.isPresent()){
             Post post = postContainer.get();
-            post.setState(PostState.BLOCKED);
+            post.setState(PostState.LOCKED);
             postRepository.save(post);
+            pls.writeLog(id, PostState.LOCKED, note);
             return true;
         }else return false;
     }
 
-    public boolean delete(String id){
+    public boolean unlock(String id){
+        Optional<Post> postContainer = postRepository.findById(id);
+        if(postContainer.isPresent()){
+            Post post = postContainer.get();
+            post.setState(PostState.APPROVED);
+            postRepository.save(post);
+            pls.writeLog(id, PostState.APPROVED, "Được mỏ khoá");
+            return true;
+        }
+        return false;
+    }
+
+    public boolean delete(String id, String note){
         Optional<Post> postContainer = postRepository.findById(id);
         if(postContainer.isPresent()){
             Post post = postContainer.get();
             post.setState(PostState.DELETED);
             postRepository.save(post);
+            pls.writeLog(id, PostState.DELETED, note);
             return true;
         }else return false;
     }
 
     public Post createTextPost(String author, String title, String content){
         Post post = new Post(title, content, author);
+        pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
         return postRepository.insert(post);
     }
 
-    public void createImagePost(MultipartFile[] files, String author, String content, String title)  throws IOException, DbxException {
+    public void createImagePost(MultipartFile[] files, String[] description, String author, String content, String title)  throws IOException, DbxException {
         List<Media> imgList = new ArrayList<>();
-        Arrays.asList(files).stream().forEach(file -> {
+        ArrayList<MultipartFile> arr = new ArrayList<>(Arrays.asList(files));
+        for(int i = 0; i < arr.size(); i++){
             try {
-                imgList.add(DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + ""));
+                MultipartFile file = arr.get(i);
+                Media m = DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + "");
+                m.setDescription(description[i]);
+                imgList.add(m);
             } catch (DbxException | IOException e) {
                 e.printStackTrace();
             }
-        });
-        Post post = new Post(title, content, author, imgList.toArray(new Media[0]), PostType.IMAGE);
+        }
+        Post post = new Post(title, content, author, imgList.toArray(new Media[0]));
+        pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
         postRepository.save(post);
     }
 
-    public void createVideoPost(MultipartFile file, String author, String content, String title) throws IOException, DbxException{
-        List<Media> video = new ArrayList<>();
-        video.add(DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + ""));
-        Post post = new Post(title, content, author, video.toArray(new Media[0]), PostType.VIDEO);
+    public void createVideoPost(MultipartFile file, String description, String author, String content, String title) throws IOException, DbxException{
+        Media m = DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + "");
+        m.setDescription(description);
+        Post post = new Post(title, content, author, m);
+        pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
+        postRepository.save(post);
+    }
+
+    public void createImageAndVideoPost(MultipartFile[] images, String[] imageDes, MultipartFile video, String videoDes, String author, String content, String title)
+        throws  IOException, DbxException{
+        List<Media> imgList = new ArrayList<>();
+        ArrayList<MultipartFile> arr = new ArrayList<>(Arrays.asList(images));
+        for(int i = 0; i < arr.size(); i++){
+            try {
+                MultipartFile file = arr.get(i);
+                Media m = DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + "");
+                m.setDescription(imageDes[i]);
+                imgList.add(m);
+            } catch (DbxException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Media media = DropboxUtils.uploadFile(video.getInputStream(), System.currentTimeMillis() + "");
+        media.setDescription(videoDes);
+
+        Post post = new Post(title, content, author, imgList.toArray(new Media[0]), media);
+        pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
         postRepository.save(post);
     }
 
@@ -136,6 +206,7 @@ public class PostServices {
             Post post = postContainer.get();
             post.setPostContent(content);
             post.setState(PostState.PENDING);
+            pls.writeLog(post.getId(), PostState.CREATED, "Cập nhật");
             postRepository.save(post);
         }else {
             throw new Exception("No_Content");
@@ -151,6 +222,7 @@ public class PostServices {
             List<String> media = new ArrayList<>();
             media.add(url);
             ////
+            pls.writeLog(post.getId(), PostState.CREATED, "Cập nhật");
             postRepository.save(post);
         }else {
             throw new Exception("No_Content");
@@ -163,6 +235,7 @@ public class PostServices {
             Post post = postContainer.get();
             post.setPostContent(content);
             post.setState(PostState.PENDING);
+            pls.writeLog(post.getId(), PostState.CREATED, "Cập nhật");
             postRepository.save(post);
         }else {
             throw new Exception("No_Content");

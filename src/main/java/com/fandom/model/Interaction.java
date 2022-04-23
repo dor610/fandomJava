@@ -1,5 +1,6 @@
 package com.fandom.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,6 +25,8 @@ public class Interaction {
     }
 
     public Interaction(String account, String targetId, InteractionType type) {
+        ObjectId id = new ObjectId();
+        this.id = "interation_"+id.toString();
         this.account = account;
         this.targetId = targetId;
         this.type = type;

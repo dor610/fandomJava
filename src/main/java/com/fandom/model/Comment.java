@@ -1,5 +1,6 @@
 package com.fandom.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,6 +35,8 @@ public class Comment {
     }
 
     public Comment(String author, String targetId, String content, Media[] image) {
+        ObjectId id = new ObjectId();
+        this.id = "comment_"+id.toString();
         this.author = author;
         this.targetId = targetId;
         this.content = content;
@@ -44,6 +47,8 @@ public class Comment {
     }
 
     public Comment(String author, String targetId, String content){
+        ObjectId id = new ObjectId();
+        this.id = "comment_"+id.toString();
         this.author = author;
         this.targetId = targetId;
         this.content = content;

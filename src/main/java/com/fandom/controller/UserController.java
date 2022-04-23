@@ -1,12 +1,14 @@
 package com.fandom.controller;
 
 import com.fandom.model.User;
+import com.fandom.model.UserState;
 import com.fandom.services.UserServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -39,10 +41,21 @@ public class UserController {
     public ResponseEntity<User> getUserInfo(@PathVariable("account") String account) throws Exception{
         try{
             User user = userServices.getUserInfo(account);
+            user.setPassword("");
             return new ResponseEntity<>(user, HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    //Get banned user, 10 per time
+    @GetMapping("/user/banned/{page}")
+    public ResponseEntity<Map<String, User>> getBannedUser(@PathVariable("page") String pageStr){
+        int page = Integer.parseInt(pageStr);
+        Map<String,User> list = userServices.getUserByState(UserState.BANNED, page);
+        if(list == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(list, HttpStatus.OK);
+
     }
 
     @GetMapping("/user/isExist/{account}") //
@@ -60,9 +73,9 @@ public class UserController {
 
 
     //delete a user by account, admin right is required
-    @DeleteMapping("/deleteAccount")
-    public boolean deleteAccount(@RequestParam("account") String account) throws Exception {
-        return userServices.deleteAccount(account);
+    @PostMapping("/deleteAccount")
+    public boolean deleteAccount(@RequestParam("account") String account, @RequestParam("note") String note) throws Exception {
+        return userServices.deleteAccount(account, note);
     }
 
 }

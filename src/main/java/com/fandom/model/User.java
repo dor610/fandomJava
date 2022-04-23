@@ -1,5 +1,6 @@
 package com.fandom.model;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,6 +21,7 @@ public class User {
     private String password;
     private String dateOfBirth;
     private String email;
+    private String createdDate;
     private Role role;
     private UserState status;
     private String avatar;
@@ -27,13 +29,14 @@ public class User {
 
     public User(){}
 
-    public User(String id, String account, String userName, String password, String dateOfBirth, String email, Role role, UserState status, String avatar,
+    public User(String id, String account, String userName, String password, String createdDate, String dateOfBirth, String email, Role role, UserState status, String avatar,
                 ArrayList<String> recentChat) {
         this.id = id;
         this.account = account;
         this.userName = userName;
         this.password = password;
         this.dateOfBirth = dateOfBirth;
+        this.createdDate = createdDate;
         this.email = email;
         this.role = role;
         this.status = status;
@@ -42,12 +45,15 @@ public class User {
     }
 
     public User(String account, String userName, String password, String dateOfBirth, String email){
+        ObjectId id = new ObjectId();
+        this.id = "user_"+id.toString();
         this.account = account;
         this.userName = userName;
         this.password = password;
         this.dateOfBirth = dateOfBirth;
         this.email = email;
         this.role = Role.MEMBER;
+        this.createdDate = System.currentTimeMillis() +"";
         this.status = UserState.ACTIVE;
         this.avatar = "https://www.dropbox.com/s/wm9xcmn2z82yydi/avatar.png?raw=1";
         this.recentChat = new ArrayList<>();

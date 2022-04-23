@@ -20,7 +20,7 @@ public interface PostRepository extends MongoRepository<Post, String> {
     @Query(value = "{'author': ?0, state: ?1}", sort = "{'timestamp': -1}")
     public Page<Post> getPostByAuthorAndState(String author, PostState state, Pageable pageable);
 
-    @Query(value = "{'state': ?0}", sort = "{'timestamp}: -1")
+    @Query(value = "{'state': ?0}", sort = "{'timestamp': -1}")
     public Page<Post> getPostByState(PostState state, Pageable pageable);
 
 

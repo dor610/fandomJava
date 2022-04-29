@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -30,10 +31,9 @@ public class CommentController {
     }
 
     @GetMapping("/comment/get/{targetId}/{page}")
-    public ResponseEntity<List<Comment>> getComments(@PathVariable("targetId") String targetId, @PathVariable("page") String page){
-        List<Comment> list = commentServices.getComments(targetId, Integer.parseInt(page));
-        if(list == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(list, HttpStatus.OK);
+    public ResponseEntity<Map<String,Comment>> getComments(@PathVariable("targetId") String targetId, @PathVariable("page") String page){
+        Map<String,Comment> map = commentServices.getComments(targetId, Integer.parseInt(page));
+        return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
     @PostMapping("/comment/post/text")

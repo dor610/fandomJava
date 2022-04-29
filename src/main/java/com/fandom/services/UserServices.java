@@ -13,7 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +55,7 @@ public class UserServices {
     public Map<String,User> getUserByState( UserState state, int page){
         Pageable pageable = PageRequest.of(page, 10);
         Page<User> userPage = userRepository.findUserbyStatus(state, pageable);
-        Map<String, User> map = new HashMap<>();
+        Map<String, User> map = new LinkedHashMap<>();
         if(userPage.getContent().size() > 0){
             for(User u: userPage.getContent()){
                 map.put(u.getId(), u);
@@ -67,7 +67,7 @@ public class UserServices {
     public Map<String, String> getUserBasicInfo(String account){
         User user = userRepository.findUserByAccount(account);
         if(user != null){
-            Map<String, String> map = new HashMap<>();
+            Map<String, String> map = new LinkedHashMap<>();
             map.put("account", user.getAccount());
             map.put("userName", user.getUserName());
             map.put("email", user.getEmail());

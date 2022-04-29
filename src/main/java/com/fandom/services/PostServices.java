@@ -36,7 +36,7 @@ public class PostServices {
 
         Page<Post> posts = postRepository.getPostByState(PostState.APPROVED, pageable);
 
-        Map<String, Post> map = new HashMap();
+        Map<String, Post> map = new LinkedHashMap();
         for(Post p: posts.getContent()){
             map.put(p.getId(), p);
         }
@@ -55,7 +55,7 @@ public class PostServices {
     public Map<String, Post> getPostsByAuthor(String author, int page){
         Pageable pageable = PageRequest.of(page, 1);
         Page<Post> postPage = postRepository.findPostsByAuthor(author, pageable);
-        Map<String, Post> map = new HashMap();
+        Map<String, Post> map = new LinkedHashMap();
         for(Post p: postPage.getContent()){
             map.put(p.getId(), p);
         }
@@ -63,10 +63,10 @@ public class PostServices {
     }
 
     //lấy các post theo state và theo tác giả
-    public Map<String, Post> getLockedPostByAuthor(String author, PostState state, int page){
-        Pageable pageable = PageRequest.of(page, 10);
+    public Map<String, Post> getPostByAuthorAndState(String author, PostState state, int page){
+        Pageable pageable = PageRequest.of(page, 3);
         Page<Post> postPage = postRepository.getPostByAuthorAndState(author, state, pageable);
-        Map<String, Post> map = new HashMap();
+        Map<String, Post> map = new LinkedHashMap();
         for(Post p: postPage.getContent()){
             map.put(p.getId(), p);
         }
@@ -74,9 +74,9 @@ public class PostServices {
     }
 
     public Map<String,Post> getPendingPosts(int page){
-        Pageable pageable = PageRequest.of(page, 10);
+        Pageable pageable = PageRequest.of(page, 1);
         Page<Post> posts = postRepository.getPostByState(PostState.PENDING, pageable);
-        Map<String, Post> map = new HashMap<>();
+        Map<String, Post> map = new LinkedHashMap<>();
         if(posts.getContent().size() > 0){
             for(Post p: posts.getContent()){
                 map.put(p.getId(), p);
@@ -85,14 +85,17 @@ public class PostServices {
         return map;
     }
 
-    public int countPedingPostsByAuthor(String author){
-        return postRepository.countPostsByAuthorAndState(author, PostState.PENDING);
+    public int countPostsByAuthorAndState(String author, PostState state){
+        return postRepository.countPostsByAuthorAndState(author, state);
+    }
+    public int countPostByState(PostState state){
+        return  postRepository.countPostsByState(state);
     }
 
     public Map<String,Post> getLockedPosts(int page){
         Pageable pageable = PageRequest.of(page, 10);
         Page<Post> posts = postRepository.getPostByState(PostState.LOCKED, pageable);
-        Map<String, Post> map = new HashMap<>();
+        Map<String, Post> map = new LinkedHashMap<>();
         if(posts.getContent().size() > 0){
             for(Post p: posts.getContent()){
                 map.put(p.getId(), p);
@@ -107,7 +110,7 @@ public class PostServices {
             Post post = postContainer.get();
             post.setState(PostState.APPROVED);
             postRepository.save(post);
-            pls.writeLog(id, PostState.APPROVED, "Được đuyệt");
+            pls.writeLog(id, PostState.APPROVED, "Bài viết đã được đuyệt");
             return true;
         }else return false;
     }
@@ -129,7 +132,7 @@ public class PostServices {
             Post post = postContainer.get();
             post.setState(PostState.APPROVED);
             postRepository.save(post);
-            pls.writeLog(id, PostState.APPROVED, "Được mỏ khoá");
+            pls.writeLog(id, PostState.APPROVED, "Được mở khoá");
             return true;
         }
         return false;
@@ -153,19 +156,19 @@ public class PostServices {
     }
 
     public void createImagePost(MultipartFile[] files, String[] description, String author, String content, String title)  throws IOException, DbxException {
-        List<Media> imgList = new ArrayList<>();
+        Map<String, Media> map = new LinkedHashMap<>();
         ArrayList<MultipartFile> arr = new ArrayList<>(Arrays.asList(files));
         for(int i = 0; i < arr.size(); i++){
             try {
                 MultipartFile file = arr.get(i);
                 Media m = DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + "");
                 m.setDescription(description[i]);
-                imgList.add(m);
+                map.put(m.getName(), m);
             } catch (DbxException | IOException e) {
                 e.printStackTrace();
             }
         }
-        Post post = new Post(title, content, author, imgList.toArray(new Media[0]));
+        Post post = new Post(title, content, author, map);
         pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
         postRepository.save(post);
     }
@@ -180,14 +183,14 @@ public class PostServices {
 
     public void createImageAndVideoPost(MultipartFile[] images, String[] imageDes, MultipartFile video, String videoDes, String author, String content, String title)
         throws  IOException, DbxException{
-        List<Media> imgList = new ArrayList<>();
+        Map<String, Media> map = new LinkedHashMap<>();
         ArrayList<MultipartFile> arr = new ArrayList<>(Arrays.asList(images));
         for(int i = 0; i < arr.size(); i++){
             try {
                 MultipartFile file = arr.get(i);
                 Media m = DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + "");
                 m.setDescription(imageDes[i]);
-                imgList.add(m);
+                map.put(m.getName(), m);
             } catch (DbxException | IOException e) {
                 e.printStackTrace();
             }
@@ -195,7 +198,7 @@ public class PostServices {
         Media media = DropboxUtils.uploadFile(video.getInputStream(), System.currentTimeMillis() + "");
         media.setDescription(videoDes);
 
-        Post post = new Post(title, content, author, imgList.toArray(new Media[0]), media);
+        Post post = new Post(title, content, author, map, media);
         pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
         postRepository.save(post);
     }

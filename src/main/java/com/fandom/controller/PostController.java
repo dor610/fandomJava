@@ -2,6 +2,8 @@ package com.fandom.controller;
 
 import com.dropbox.core.DbxException;
 import com.fandom.model.Post;
+import com.fandom.model.PostLog;
+import com.fandom.model.PostState;
 import com.fandom.model.PostType;
 import com.fandom.services.PostLogServices;
 import com.fandom.services.PostServices;
@@ -24,10 +26,12 @@ import java.util.Map;
 public class PostController {
 
     private PostServices postServices;
+    private PostLogServices pls;
 
 
     @Autowired
-    public PostController(PostServices postServices) {
+    public PostController(PostServices postServices, PostLogServices pls) {
+        this.pls = pls;
         this.postServices = postServices;
     }
 
@@ -56,6 +60,16 @@ public class PostController {
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
+    @GetMapping("/post/count/pending")
+    public ResponseEntity<Integer> countPendingPost() {
+        int count = postServices.countPostByState(PostState.PENDING);
+        return  new ResponseEntity<>(count, HttpStatus.OK);
+    }
+    @GetMapping("/post/count/locked")
+    public ResponseEntity<Integer> countLockedPost() {
+        int count = postServices.countPostByState(PostState.LOCKED);
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
     //get pending posts, 10 per time //
     @GetMapping("/post/pending/{page}")
     public ResponseEntity<Map<String, Post>> getPendingPost(@PathVariable("page") String pageStr){
@@ -67,9 +81,29 @@ public class PostController {
     //count pending post by author
     @GetMapping("/post/pending/count/{author}")
     public ResponseEntity<Integer> countPendingPostByAuthor(@PathVariable("author") String author){
-        int count = postServices.countPedingPostsByAuthor(author);
+        int count = postServices.countPostsByAuthorAndState(author, PostState.PENDING);
         return new ResponseEntity(count, HttpStatus.OK);
     }
+
+    @GetMapping("/post/deleted/count/{author}")
+    public ResponseEntity<Integer> countDeletedPostByAuthor(@PathVariable("author") String author){
+        int count = postServices.countPostsByAuthorAndState(author, PostState.DELETED);
+        return new ResponseEntity(count, HttpStatus.OK);
+    }
+
+    @GetMapping("/post/approved/count/{author}")
+    public ResponseEntity<Integer> countApprovedPostByAuthor(@PathVariable("author") String author){
+        int count = postServices.countPostsByAuthorAndState(author, PostState.APPROVED);
+        return new ResponseEntity(count, HttpStatus.OK);
+    }
+
+    @GetMapping("/post/locked/count/{author}")
+    public ResponseEntity<Integer> countLockedPostByAuthor(@PathVariable("author") String author){
+        int count = postServices.countPostsByAuthorAndState(author, PostState.LOCKED);
+        return new ResponseEntity(count, HttpStatus.OK);
+    }
+
+
 
     //get locked posts, 10 per time
     @GetMapping("/post/locked/{page}") //
@@ -78,6 +112,34 @@ public class PostController {
         Map<String, Post> posts = postServices.getLockedPosts(page);
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
+
+
+    @GetMapping("/post/user/{account}/pending/{page}")
+    public ResponseEntity<Map<String, Post>> getPendingpostByUser(@PathVariable("account") String account, @PathVariable("page") String pageStr){
+        int page = Integer.parseInt(pageStr);
+        Map<String, Post> posts = postServices.getPostByAuthorAndState(account, PostState.PENDING, page);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+    @GetMapping("/post/user/{account}/approved/{page}")
+    public ResponseEntity<Map<String, Post>> getApprovedpostByUser(@PathVariable("account") String account, @PathVariable("page") String pageStr){
+        int page = Integer.parseInt(pageStr);
+        Map<String, Post> posts = postServices.getPostByAuthorAndState(account, PostState.APPROVED, page);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+    @GetMapping("/post/user/{account}/locked/{page}")
+    public ResponseEntity<Map<String, Post>> getLockedpostByUser(@PathVariable("account") String account, @PathVariable("page") String pageStr){
+        int page = Integer.parseInt(pageStr);
+        Map<String, Post> posts = postServices.getPostByAuthorAndState(account, PostState.LOCKED, page);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+    @GetMapping("/post/user/{account}/deleted/{page}")
+    public ResponseEntity<Map<String, Post>> getDeletedpostByUser(@PathVariable("account") String account, @PathVariable("page") String pageStr){
+        int page = Integer.parseInt(pageStr);
+        Map<String, Post> posts = postServices.getPostByAuthorAndState(account, PostState.DELETED, page);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
+
 
     // update post, used by author
     @PostMapping("/post/update")

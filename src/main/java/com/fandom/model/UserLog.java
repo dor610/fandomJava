@@ -14,7 +14,7 @@ public class UserLog {
     @Indexed
     private String account;
     private UserState state;
-    private String timestamp;
+    private long timestamp;
     private String note;
 
     public UserLog(){}
@@ -24,11 +24,11 @@ public class UserLog {
         this.id = "user_log_"+id.toString();
         this.account = account;
         this.state = state;
-        this.timestamp = System.currentTimeMillis() + "";
+        this.timestamp = System.currentTimeMillis();
         this.note = note;
     }
 
-    public UserLog(String id, String account, UserState state, String timestamp, String note) {
+    public UserLog(String id, String account, UserState state, long timestamp, String note) {
         this.id = id;
         this.account = account;
         this.state = state;
@@ -60,11 +60,11 @@ public class UserLog {
         this.state = state;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 

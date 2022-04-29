@@ -12,26 +12,29 @@ public class Schedule {
     private String id;
 
     @Indexed
-    private String timestamp;
+    private long timestamp;
     private String location;
     private String content;
+    private PostState state;
 
     public Schedule() {
     }
 
-    public Schedule(String id, String timestamp, String location, String content) {
+    public Schedule(String id, long timestamp, String location, String content, PostState state) {
         this.id = id;
         this.timestamp = timestamp;
         this.location = location;
         this.content = content;
+        this.state = state;
     }
 
-    public Schedule(String timestamp, String location, String content) {
+    public Schedule(long timestamp, String location, String content) {
         ObjectId id = new ObjectId();
         this.id = "schedule_" + id.toString();
         this.timestamp = timestamp;
         this.location = location;
         this.content = content;
+        this.state = PostState.APPROVED;
     }
 
     public String getId() {
@@ -42,11 +45,11 @@ public class Schedule {
         this.id = id;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -64,5 +67,13 @@ public class Schedule {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public PostState getState() {
+        return state;
+    }
+
+    public void setState(PostState state) {
+        this.state = state;
     }
 }

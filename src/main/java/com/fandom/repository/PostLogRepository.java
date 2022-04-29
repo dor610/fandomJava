@@ -7,8 +7,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.util.List;
+
 public interface PostLogRepository extends MongoRepository<PostLog, String> {
 
     @Query(value = "{'postId': ?0, 'state': ?1}", sort = "{'timestamp': -1}")
-    public Page<PostLog> getByPostIdAndState(String postId, PostState state, Pageable pageable);
+    public List<PostLog> getByPostIdAndState(String postId, PostState state);
+
+    @Query(value = "{'postId': ?0}", sort = "{'timestamp': -1}")
+    public List<PostLog> getByPostId(String postId);
+
+    @Query(value = "{'timestamp': {$gte: ?0}}" , sort = "{'timestamp': 1}")
+    public List<PostLog> getUpcoming(long timestamp);
+
+    public List<PostLog> findByTimestampBetween(long start, long end);
 }

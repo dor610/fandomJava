@@ -14,16 +14,16 @@ public class PostLog {
     @Indexed
     private String postId;
     private PostState state;
-    private String timeStamp;
+    private long timestamp;
     private String note;
 
     public PostLog(){}
 
-    public PostLog(String id, String postId, PostState state, String timeStamp, String note) {
+    public PostLog(String id, String postId, PostState state, long timeStamp, String note) {
         this.id = id;
         this.postId = postId;
         this.state = state;
-        this.timeStamp = timeStamp;
+        this.timestamp = timeStamp;
         this.note = note;
     }
 
@@ -32,7 +32,7 @@ public class PostLog {
         this.id = "post_log_"+ id.toString();
         this.postId = postId;
         this.state = state;
-        this.timeStamp = System.currentTimeMillis() + "";
+        this.timestamp = System.currentTimeMillis();
         this.note = note;
     }
 
@@ -60,12 +60,12 @@ public class PostLog {
         this.state = state;
     }
 
-    public String getTimeStamp() {
-        return timeStamp;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setTimeStamp(String timeStamp) {
-        this.timeStamp = timeStamp;
+    public void setTimestamp(long timeStamp) {
+        this.timestamp = timeStamp;
     }
 
     public String getNote() {

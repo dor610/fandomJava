@@ -9,7 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Service
@@ -29,7 +29,7 @@ public class UserLogServices {
     public Map<String, UserLog> getPostLog(String id, UserState state, int page){
         Pageable pageable = PageRequest.of(page, 10);
         Page<UserLog> plp = ulr.getByUserIdAndState(id, state, pageable);
-        Map<String, UserLog> map = new HashMap<>();
+        Map<String, UserLog> map = new LinkedHashMap<>();
         for(UserLog pl: plp.getContent()){
             map.put(pl.getId(), pl);
         }

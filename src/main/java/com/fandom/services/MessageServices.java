@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +36,7 @@ public class MessageServices {
     public Map<String, Message> viewMessage(String chatId, String account,int page){
             Pageable paging = PageRequest.of(page, 15);
             Page<Message> messagePage = mesRepo.findByChatId(chatId, paging);
-            Map<String, Message> map = new HashMap();
+            Map<String, Message> map = new LinkedHashMap();
             for(Message message: messagePage.getContent()){
                 if(message.getSender().equals(account)){
                     if(!message.getSenderState().equals(MessageState.REMOVED))
@@ -49,7 +49,7 @@ public class MessageServices {
     public Map<String, Message> viewNotification(String recipient, int page){
         Pageable pageable = PageRequest.of(page, 15);
         Page<Message> mesPage = mesRepo.findByRecipientAndType(recipient, MessageType.NOTIFICATION, pageable);
-        Map<String, Message> map = new HashMap<>();
+        Map<String, Message> map = new LinkedHashMap<>();
         for (Message noti: mesPage.getContent()){
             map.put(noti.getId(), noti);
         }

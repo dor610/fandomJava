@@ -21,7 +21,7 @@ public class User {
     private String password;
     private String dateOfBirth;
     private String email;
-    private String createdDate;
+    private long createdDate;
     private Role role;
     private UserState status;
     private String avatar;
@@ -29,7 +29,7 @@ public class User {
 
     public User(){}
 
-    public User(String id, String account, String userName, String password, String createdDate, String dateOfBirth, String email, Role role, UserState status, String avatar,
+    public User(String id, String account, String userName, String password, long createdDate, String dateOfBirth, String email, Role role, UserState status, String avatar,
                 ArrayList<String> recentChat) {
         this.id = id;
         this.account = account;
@@ -53,7 +53,7 @@ public class User {
         this.dateOfBirth = dateOfBirth;
         this.email = email;
         this.role = Role.MEMBER;
-        this.createdDate = System.currentTimeMillis() +"";
+        this.createdDate = System.currentTimeMillis();
         this.status = UserState.ACTIVE;
         this.avatar = "https://www.dropbox.com/s/wm9xcmn2z82yydi/avatar.png?raw=1";
         this.recentChat = new ArrayList<>();

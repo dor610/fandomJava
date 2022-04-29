@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CommentServices {
@@ -39,15 +36,17 @@ public class CommentServices {
     }
 
     public void addImageComment(String author, String targetId, String content, MultipartFile[] files){
-        List<Media> imgList = new ArrayList<>();
+        Map<String, Media> map = new LinkedHashMap<>();
         Arrays.asList(files).forEach(file -> {
             try {
-                imgList.add(DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + ""));
+                Media m = DropboxUtils.uploadFile(file.getInputStream(), System.currentTimeMillis() + "");
+                m.setDescription("");
+                map.put(m.getName(), m);
             } catch (DbxException | IOException e) {
                 e.printStackTrace();
             }
         });
-        Comment comment = new Comment(author, targetId, content, imgList.toArray(new Media[0]));
+        Comment comment = new Comment(author, targetId, content, map);
         commentRepository.save(comment);
     }
 
@@ -57,17 +56,21 @@ public class CommentServices {
         commentRepository.save(comment);
     }
 
-    public void updateImgComment(String author, String targetId, String content, Media[] img){
+    public void updateImgComment(String author, String targetId, String content, Map<String, Media> img){
         Comment comment = commentRepository.findCommentByAuthorAndTargetId(author, targetId);
         comment.setContent(content);
         comment.setImage(img);
         commentRepository.save(comment);
     }
 
-    public List<Comment> getComments(String targetId, int page){
+    public Map<String,Comment> getComments(String targetId, int page){
         Pageable pageable = PageRequest.of(page, 10);
         Page<Comment> commentPage = commentRepository.getCommentsByTargetIdAndState(targetId, PostState.APPROVED, pageable);
-        return commentPage.getContent();
+        Map<String, Comment> map = new LinkedHashMap<>();
+        for(Comment c: commentPage.getContent()){
+            map.put(c.getId(), c);
+        }
+        return map;
     }
 
     public void deleteComment(String id) throws Exception {

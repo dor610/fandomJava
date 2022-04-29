@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+
 @Document(collection = "post")
 public class Post {
 
@@ -15,15 +17,15 @@ public class Post {
     private String title;
     private String postContent;
     private String author;
-    private String timestamp;
-    private Media[] images;
+    private long timestamp;
+    private Map<String, Media> images;
     private Media video;
     private PostType type;
     private PostState state;
 
     public Post(){};
 
-    public Post(String id, String title, String postContent, String author, String timestamp, Media[] images, Media video, PostType type, PostState state) {
+    public Post(String id, String title, String postContent, String author, long timestamp, Map<String, Media> images, Media video, PostType type, PostState state) {
         this.id = id;
         this.title = title;
         this.postContent = postContent;
@@ -36,13 +38,13 @@ public class Post {
     }
 
     //images and video post
-    public Post(String title, String postContent, String author, Media[] images, Media video) {
+    public Post(String title, String postContent, String author, Map<String, Media> images, Media video) {
         ObjectId id = new ObjectId();
         this.id = "post_"+id.toString();
         this.title = title;
         this.postContent = postContent;
         this.author = author;
-        this.timestamp = System.currentTimeMillis() + "";
+        this.timestamp = System.currentTimeMillis();
         this.images = images;
         this.video = video;
         this.type = PostType.IMAGE_VIDEO;
@@ -56,20 +58,20 @@ public class Post {
         this.title = title;
         this.postContent = postContent;
         this.author = author;
-        this.timestamp = System.currentTimeMillis() + "";
+        this.timestamp = System.currentTimeMillis();
         this.video = video;
         this.type = PostType.VIDEO;
         this.state = PostState.PENDING;
     }
 
     //image only post
-    public Post(String title, String postContent, String author, Media[] images) {
+    public Post(String title, String postContent, String author, Map<String, Media> images) {
         ObjectId id = new ObjectId();
         this.id = "post_"+id.toString();
         this.title = title;
         this.postContent = postContent;
         this.author = author;
-        this.timestamp = System.currentTimeMillis() + "";
+        this.timestamp = System.currentTimeMillis();
         this.images = images;
         this.type = PostType.IMAGE;
         this.state = PostState.PENDING;
@@ -77,12 +79,14 @@ public class Post {
 
     //text only post
     public Post(String title, String postContent, String author){
+        ObjectId id = new ObjectId();
+        this.id = "post_"+id.toString();
         this.title = title;
         this.postContent = postContent;
         this.author = author;
         this.state = PostState.PENDING;
         this.type = PostType.TEXT;
-        this.timestamp = System.currentTimeMillis() + "";
+        this.timestamp = System.currentTimeMillis();
     }
 
     public String getId() {
@@ -109,11 +113,11 @@ public class Post {
         this.author = author;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -141,11 +145,11 @@ public class Post {
         this.title = title;
     }
 
-    public Media[] getImages() {
+    public Map<String, Media> getImages() {
         return images;
     }
 
-    public void setImages(Media[] images) {
+    public void setImages(Map<String, Media> images) {
         this.images = images;
     }
 

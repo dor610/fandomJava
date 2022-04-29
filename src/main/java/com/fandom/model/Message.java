@@ -14,7 +14,7 @@ public class Message {
     private String chatId;
     private String sender;
     private String recipient;
-    private String timeStamp;
+    private long timeStamp;
     private String message;
     private Media[] images;
     private MessageState senderState;
@@ -24,7 +24,7 @@ public class Message {
 
     public Message(){}
 
-    public Message(String id, String chatId, String sender, String recipient, Media[] images, String timeStamp, String message,
+    public Message(String id, String chatId, String sender, String recipient, Media[] images, long timeStamp, String message,
                    MessageState senderState, MessageState recipientState, PostType messageType, MessageType type) {
         this.id = id;
         this.chatId = chatId;
@@ -45,7 +45,7 @@ public class Message {
         this.chatId = chatId;
         this.sender = sender;
         this.recipient = recipient;
-        this.timeStamp = System.currentTimeMillis() + "";
+        this.timeStamp = System.currentTimeMillis();
         this.message = message;
         this.messageType = PostType.TEXT;
         this.senderState = MessageState.SENT;
@@ -59,7 +59,7 @@ public class Message {
         this.chatId = chatId;
         this.sender = sender;
         this.recipient = recipient;
-        this.timeStamp = System.currentTimeMillis() + "";
+        this.timeStamp = System.currentTimeMillis();
         this.message = message;
         this.messageType = PostType.IMAGE;
         this.senderState = MessageState.SENT;
@@ -110,11 +110,11 @@ public class Message {
         this.recipient = recipient;
     }
 
-    public String getTimeStamp() {
+    public long getTimeStamp() {
         return timeStamp;
     }
 
-    public void setTimeStamp(String timeStamp) {
+    public void setTimeStamp(long timeStamp) {
         this.timeStamp = timeStamp;
     }
 

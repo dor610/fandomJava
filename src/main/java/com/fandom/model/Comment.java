@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+
 @Document(collection = "comment")
 public class Comment {
 
@@ -15,14 +17,14 @@ public class Comment {
     private String author;
     private String targetId;
     private String content;
-    private Media[] image;
+    private Map<String, Media> image;
     private PostType type;
-    private String timestamp;
+    private long timestamp;
     private PostState state;
 
     public Comment(){}
 
-    public Comment(String id, String author, String targetId, String content, Media[] image, PostType type, String timestamp,
+    public Comment(String id, String author, String targetId, String content, Map<String, Media> image, PostType type, int timestamp,
                    PostState state) {
         this.id = id;
         this.author = author;
@@ -34,7 +36,7 @@ public class Comment {
         this.state = state;
     }
 
-    public Comment(String author, String targetId, String content, Media[] image) {
+    public Comment(String author, String targetId, String content, Map<String, Media> image) {
         ObjectId id = new ObjectId();
         this.id = "comment_"+id.toString();
         this.author = author;
@@ -42,7 +44,7 @@ public class Comment {
         this.content = content;
         this.image = image;
         this.type = PostType.IMAGE;
-        this.timestamp = System.currentTimeMillis() + "";
+        this.timestamp = System.currentTimeMillis();
         this.state = PostState.APPROVED;
     }
 
@@ -53,7 +55,7 @@ public class Comment {
         this.targetId = targetId;
         this.content = content;
         this.type = PostType.TEXT;
-        this.timestamp = System.currentTimeMillis() +"";
+        this.timestamp = System.currentTimeMillis();
         this.state = PostState.APPROVED;
     }
 
@@ -89,11 +91,11 @@ public class Comment {
         this.content = content;
     }
 
-    public Media[] getImage() {
+    public Map<String, Media> getImage() {
         return image;
     }
 
-    public void setImage(Media[] image) {
+    public void setImage(Map<String, Media> image) {
         this.image = image;
     }
 
@@ -105,11 +107,11 @@ public class Comment {
         this.type = type;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 

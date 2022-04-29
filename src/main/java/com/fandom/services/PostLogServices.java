@@ -9,7 +9,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -27,14 +28,32 @@ public class PostLogServices {
         plr.save(pl);
     }
 
-    public Map<String, PostLog> getPostLog(String id, PostState state, int page){
-        Pageable pageable = PageRequest.of(page, 10);
-        Page<PostLog> plp = plr.getByPostIdAndState(id, state, pageable);
-        Map<String, PostLog> map = new HashMap<>();
-        for(PostLog pl: plp.getContent()){
+    public Map<String, PostLog> getPostLogByPostIdAndState(String id, PostState state){
+        List<PostLog> plp = plr.getByPostIdAndState(id, state);
+        Map<String, PostLog> map = new LinkedHashMap<>();
+        for(PostLog pl: plp){
             map.put(pl.getId(), pl);
         }
 
         return map;
+    }
+
+    public Map<String, PostLog> getPostLogByPostId(String id){
+        List<PostLog> list = plr.getByPostId(id);
+        Map<String, PostLog> map = new LinkedHashMap<>();
+        for(PostLog p: list){
+            map.put(p.getId(), p);
+        }
+
+        return  map;
+    }
+
+    public Map<String, PostLog> getUpcoming(){
+        List<PostLog> list = plr.getUpcoming(System.currentTimeMillis());
+        Map<String, PostLog> map = new LinkedHashMap<>();
+        for(PostLog p: list){
+            map.put(p.getId(), p);
+        }
+        return  map;
     }
 }

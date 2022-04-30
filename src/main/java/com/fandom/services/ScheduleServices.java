@@ -27,32 +27,34 @@ public class ScheduleServices {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Schedule> sp = sr.getSchedulesByState(PostState.APPROVED, pageable);
 
-        Map<String, Schedule> map = new LinkedHashMap<>();
-        for(Schedule s: sp.getContent()){
-            map.put(s.getId(), s);
-        }
-        return map;
+        return listToMap(sp.getContent());
     }
 
-    public Map<String, Schedule> getUpcoming(){
-        List<Schedule> list = sr.getUpcoming(System.currentTimeMillis());
-        Map<String, Schedule> map = new LinkedHashMap<>();
-        for(Schedule s: list){
-            map.put(s.getId(), s);
-        }
+    public Map<String, Schedule> getUpcoming(int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Schedule> list = sr.getUpcoming(System.currentTimeMillis(), pageable);
+        return listToMap(list.getContent());
+    }
 
-        return  map;
+    public Map<String, Schedule> getBetween( long start, long end, int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Schedule> list = sr.findScheduleByTimestampBetween(start, end, pageable);
+
+        return listToMap(list.getContent());
+    }
+
+    public Map<String, Schedule> getFinished(int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Schedule> sp = sr.getFinished(System.currentTimeMillis(), pageable);
+
+        return listToMap(sp.getContent());
     }
 
     public Map<String, Schedule> getSchedule(){
         Pageable pageable = PageRequest.of(0, 6);
-        Page<Schedule> sp = sr.getSchedulesByState(PostState.APPROVED, pageable);
+        Page<Schedule> sp = sr.getUpcoming(System.currentTimeMillis(), pageable);
 
-        Map<String, Schedule> map = new LinkedHashMap<>();
-        for(Schedule s: sp.getContent()){
-            map.put(s.getId(), s);
-        }
-        return map;
+        return listToMap(sp.getContent());
     }
 
 
@@ -80,5 +82,13 @@ public class ScheduleServices {
             s.setState(PostState.DELETED);
             sr.save(s);
         }
+    }
+
+    private Map<String, Schedule> listToMap(List<Schedule> list){
+        Map<String, Schedule> map = new LinkedHashMap<>();
+        for(Schedule s: list){
+            map.put(s.getId(), s);
+        }
+        return map;
     }
 }

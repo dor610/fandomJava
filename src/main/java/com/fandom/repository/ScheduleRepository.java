@@ -15,9 +15,11 @@ public interface ScheduleRepository extends MongoRepository<Schedule, String> {
     public Page<Schedule> getSchedulesByState(PostState state, Pageable pageable);
 
     @Query(value = "{'timestamp': {$gte: ?0}}" , sort = "{'timestamp': 1}")
-    public List<Schedule> getUpcoming(long timestamp);
+    public Page<Schedule> getUpcoming(long timestamp, Pageable pageable);
 
     @Query(value = "{'timestamp': {$lt: ?0}}", sort = "{'timestamp': -1}")
-    public List<Schedule> getFinished(long timestamp);
+    public Page<Schedule> getFinished(long timestamp, Pageable pageable);
+
+    public Page<Schedule> findScheduleByTimestampBetween(long start, long end, Pageable pageable);
 
 }

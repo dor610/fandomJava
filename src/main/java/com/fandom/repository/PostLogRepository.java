@@ -21,4 +21,12 @@ public interface PostLogRepository extends MongoRepository<PostLog, String> {
     public List<PostLog> getUpcoming(long timestamp);
 
     public List<PostLog> findByTimestampBetween(long start, long end);
+
+
+
+    //Đếm số bài theo postId và state
+    public int countByPostIdAndState(String postId, PostState state);
+
+    //có tồn tại theo postId và state
+    public boolean existsPostLogByPostIdAndState(String postId, PostState state);
 }

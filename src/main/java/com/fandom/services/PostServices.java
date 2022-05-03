@@ -245,6 +245,10 @@ public class PostServices {
         }
     }
 
+    public int countLockedPostByAccount(String account){
+
+        return 0;
+    }
 
 
 

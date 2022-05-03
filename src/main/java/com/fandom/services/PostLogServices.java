@@ -56,4 +56,11 @@ public class PostLogServices {
         }
         return  map;
     }
+
+    public int countPostLogByStateAndPostId(PostState state, String postId){
+
+        int count = plr.countByPostIdAndState(postId, state);
+
+        return count;
+    }
 }

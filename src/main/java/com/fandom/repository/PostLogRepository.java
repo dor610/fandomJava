@@ -31,4 +31,6 @@ public interface PostLogRepository extends MongoRepository<PostLog, String> {
 
     //có tồn tại theo postId và state
     public boolean existsPostLogByPostIdAndState(String postId, PostState state);
+
+    public List<PostLog> findPostLogByPostIdAndState(String postId, PostState state);
 }

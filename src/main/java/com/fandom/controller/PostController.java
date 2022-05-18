@@ -84,16 +84,40 @@ public class PostController {
         return new ResponseEntity(count, HttpStatus.OK);
     }
 
+    @GetMapping("/post/deleted/count/all/{account}")
+    public ResponseEntity<Integer> countAllDeletedPostByAuthor(@PathVariable("account") String account){
+        int count = postServices.countAllDeletedPostByAccount(account);
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+
     @GetMapping("/post/approved/count/{author}")
     public ResponseEntity<Integer> countApprovedPostByAuthor(@PathVariable("author") String author){
         int count = postServices.countPostsByAuthorAndState(author, PostState.APPROVED);
         return new ResponseEntity(count, HttpStatus.OK);
     }
 
+    @GetMapping("/post/approved/count/all/{account}")
+    public ResponseEntity<Integer> countAllApprovedPostByAuthor(@PathVariable("account") String account){
+        int count = postServices.countAllApprovedPostByAccount(account);
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+
     @GetMapping("/post/locked/count/{author}")
     public ResponseEntity<Integer> countLockedPostByAuthor(@PathVariable("author") String author){
         int count = postServices.countPostsByAuthorAndState(author, PostState.LOCKED);
         return new ResponseEntity(count, HttpStatus.OK);
+    }
+
+    @GetMapping("/post/locked/count/all/{account}")
+    public  ResponseEntity<Integer> countAllLockedPost(@PathVariable("account") String account){
+        int count = postServices.countAllLockedPostByAccount(account);
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+
+    @GetMapping("/post/count/all/{account}")
+    public ResponseEntity<Integer> countAllPost(@PathVariable("account") String account){
+        int count = postServices.countPostByAuthor(account);
+        return new ResponseEntity<>(count, HttpStatus.OK);
     }
 
 
@@ -243,6 +267,6 @@ public class PostController {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
+
 }

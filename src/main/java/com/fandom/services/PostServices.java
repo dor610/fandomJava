@@ -91,6 +91,9 @@ public class PostServices {
     public int countPostByState(PostState state){
         return  postRepository.countPostsByState(state);
     }
+    public int countPostByAuthor(String account){
+        return postRepository.countPostsByAuthor(account);
+    }
 
     public Map<String,Post> getLockedPosts(int page){
         Pageable pageable = PageRequest.of(page, 10);
@@ -269,24 +272,49 @@ public class PostServices {
         }
     }
 /////
-    public void updateVideoPost(String postId, String content) throws Exception{
+    public void updateVideoPost(String postId, String content) throws Exception {
         Optional<Post> postContainer = postRepository.findById(postId);
-        if(postContainer.isPresent()){
+        if (postContainer.isPresent()) {
             Post post = postContainer.get();
             post.setPostContent(content);
             post.setState(PostState.PENDING);
             pls.writeLog(post.getId(), PostState.CREATED, "Cập nhật");
             pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
             postRepository.save(post);
-        }else {
+        } else {
             throw new Exception("No_Content");
         }
     }
 
-    public int countLockedPostByAccount(String account){
-
-        return 0;
+    public int countAllLockedPostByAccount(String account){
+        List<Post> list = postRepository.findPostsByAuthor(account);
+        int count = 0;
+        for(Post post: list){
+            if(pls.isExistByPostIdAndState(post.getId(), PostState.LOCKED))
+                count++;
+        }
+        return count;
     }
+
+    public int countAllApprovedPostByAccount(String account){
+        List<Post> list = postRepository.findPostsByAuthor(account);
+        int count = 0;
+        for(Post post: list){
+            if(pls.isExistByPostIdAndState(post.getId(), PostState.APPROVED))
+                count++;
+        }
+        return count;
+    }
+
+    public int countAllDeletedPostByAccount(String account){
+        List<Post> list = postRepository.findPostsByAuthor(account);
+        int count = 0;
+        for(Post post: list){
+            if(pls.isExistByPostIdAndState(post.getId(), PostState.DELETED)) count++;
+        }
+        return count;
+    }
+
 
 
 

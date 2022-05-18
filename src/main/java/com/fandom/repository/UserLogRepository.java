@@ -12,6 +12,7 @@ import java.util.List;
 public interface UserLogRepository extends MongoRepository<UserLog, String> {
 
     @Query(value = "{'account': ?0, 'state': ?1}", sort = "{'timestamp': -1}")
-    public List<UserLog> getByUserIdAndState(String userId, UserState state);
+    public List<UserLog> getByUserIdAndState(String account, UserState state);
+
 
 }

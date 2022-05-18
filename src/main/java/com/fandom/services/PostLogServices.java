@@ -70,4 +70,10 @@ public class PostLogServices {
 
         return count;
     }
+
+    public boolean isExistByPostIdAndState(String postId, PostState state){
+        List<PostLog> list = plr.findPostLogByPostIdAndState(postId, state);
+        return  list.size() > 0;
+    }
+
 }

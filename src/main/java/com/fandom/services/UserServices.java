@@ -80,6 +80,8 @@ public class UserServices {
             map.put("role", user.getRole().name());
             map.put("avatar", user.getAvatar());
             map.put("dateOfBirth", user.getDateOfBirth());
+            map.put("createdDate", user.getCreatedDate()+"");
+            map.put("status", user.getStatus().name());
             return map;
         }
         return null;

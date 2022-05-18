@@ -30,4 +30,6 @@ public interface PostRepository extends MongoRepository<Post, String> {
     //public Page<Post> findPostsByState(PostState state, Pageable pageable);
 
     public int countPostsByAuthorAndState(String author, PostState state);
+
+    public int countPostsByAuthor(String author);
 }

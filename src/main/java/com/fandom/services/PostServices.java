@@ -1,10 +1,7 @@
 package com.fandom.services;
 
 import com.dropbox.core.DbxException;
-import com.fandom.model.Media;
-import com.fandom.model.Post;
-import com.fandom.model.PostState;
-import com.fandom.model.PostType;
+import com.fandom.model.*;
 import com.fandom.repository.PostRepository;
 import com.fandom.util.DropboxUtils;
 import org.bson.types.ObjectId;
@@ -23,11 +20,14 @@ public class PostServices {
 
     private PostRepository postRepository;
     private PostLogServices pls;
+    private NotificationServices notificationServices;
 
     @Autowired
-    public PostServices(PostRepository postRepository, PostLogServices pls){
+    public PostServices(PostRepository postRepository, PostLogServices pls,
+                        NotificationServices notificationServices){
         this.pls = pls;
         this.postRepository = postRepository;
+        this.notificationServices = notificationServices;
     }
 
     //lấy nhiều post đã được duyệt từ mới tới cũ
@@ -103,6 +103,32 @@ public class PostServices {
         }
         return map;
     }
+    public Map<String,Post> getApprovedPosts(int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Post> posts = postRepository.getPostByState(PostState.APPROVED, pageable);
+        Map<String, Post> map = new LinkedHashMap<>();
+        if(posts.getContent().size() > 0){
+            for(Post p: posts.getContent()){
+                map.put(p.getId(), p);
+            }
+        }
+        return map;
+    }
+    public Map<String,Post> getRemovedPosts(int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Post> posts = postRepository.getPostByState(PostState.DELETED, pageable);
+        Map<String, Post> map = new LinkedHashMap<>();
+        if(posts.getContent().size() > 0){
+            for(Post p: posts.getContent()){
+                map.put(p.getId(), p);
+            }
+        }
+        return map;
+    }
+
+
+
+
 
     public boolean approval(String id){
         Optional<Post> postContainer = postRepository.findById(id);
@@ -111,6 +137,7 @@ public class PostServices {
             post.setState(PostState.APPROVED);
             postRepository.save(post);
             pls.writeLog(id, PostState.APPROVED, "Bài viết đã được đuyệt");
+            notificationServices.sendNotification(post.getAuthor(), "Bài viết của bạn đã được duyệt", "Bài viết", NotificationType.GOOD);
             return true;
         }else return false;
     }
@@ -122,6 +149,7 @@ public class PostServices {
             post.setState(PostState.LOCKED);
             postRepository.save(post);
             pls.writeLog(id, PostState.LOCKED, note);
+            notificationServices.sendNotification(post.getAuthor(), "Bài viết của bạn bị khoá vì: " + note, "Bài viết", NotificationType.WARNING);
             return true;
         }else return false;
     }
@@ -133,6 +161,8 @@ public class PostServices {
             post.setState(PostState.APPROVED);
             postRepository.save(post);
             pls.writeLog(id, PostState.APPROVED, "Được mở khoá");
+
+            notificationServices.sendNotification(post.getAuthor(), "Bài viết của bạn đã được mở khoá", "Bài viết", NotificationType.GOOD);
             return true;
         }
         return false;
@@ -145,6 +175,7 @@ public class PostServices {
             post.setState(PostState.DELETED);
             postRepository.save(post);
             pls.writeLog(id, PostState.DELETED, note);
+            notificationServices.sendNotification(post.getAuthor(), "Bài viết của bạn đã bị xoá bởi: "+note , "Bài viết", NotificationType.BAD);
             return true;
         }else return false;
     }
@@ -152,6 +183,7 @@ public class PostServices {
     public Post createTextPost(String author, String title, String content){
         Post post = new Post(title, content, author);
         pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
+        pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
         return postRepository.insert(post);
     }
 
@@ -170,6 +202,7 @@ public class PostServices {
         }
         Post post = new Post(title, content, author, map);
         pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
+        pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
         postRepository.save(post);
     }
 
@@ -178,6 +211,7 @@ public class PostServices {
         m.setDescription(description);
         Post post = new Post(title, content, author, m);
         pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
+        pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
         postRepository.save(post);
     }
 
@@ -200,6 +234,7 @@ public class PostServices {
 
         Post post = new Post(title, content, author, map, media);
         pls.writeLog(post.getId(), PostState.CREATED, "Tạo mới");
+        pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
         postRepository.save(post);
     }
 
@@ -210,6 +245,7 @@ public class PostServices {
             post.setPostContent(content);
             post.setState(PostState.PENDING);
             pls.writeLog(post.getId(), PostState.CREATED, "Cập nhật");
+            pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
             postRepository.save(post);
         }else {
             throw new Exception("No_Content");
@@ -226,6 +262,7 @@ public class PostServices {
             media.add(url);
             ////
             pls.writeLog(post.getId(), PostState.CREATED, "Cập nhật");
+            pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
             postRepository.save(post);
         }else {
             throw new Exception("No_Content");
@@ -239,6 +276,7 @@ public class PostServices {
             post.setPostContent(content);
             post.setState(PostState.PENDING);
             pls.writeLog(post.getId(), PostState.CREATED, "Cập nhật");
+            pls.writeLog(post.getId(), PostState.PENDING, "Đang chờ duyệt");
             postRepository.save(post);
         }else {
             throw new Exception("No_Content");

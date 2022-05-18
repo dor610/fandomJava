@@ -57,6 +57,13 @@ public class PostLogServices {
         return  map;
     }
 
+    public PostLog getLatestTimestampByPostIdAndState(String postId, PostState state){
+        System.out.println(postId + " --------------------------- " + state);
+        List<PostLog> pl = plr.getLatestTimestampByPostIdAndState(postId, state);
+        if(pl.size() > 0) return pl.get(0);
+        return null;
+    }
+
     public int countPostLogByStateAndPostId(PostState state, String postId){
 
         int count = plr.countByPostIdAndState(postId, state);

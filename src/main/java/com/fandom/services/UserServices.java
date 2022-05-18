@@ -1,9 +1,6 @@
 package com.fandom.services;
 
-import com.fandom.model.Post;
-import com.fandom.model.Role;
-import com.fandom.model.User;
-import com.fandom.model.UserState;
+import com.fandom.model.*;
 import com.fandom.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +22,17 @@ public class UserServices {
 
     private UserLogServices uls;
 
+    private NotificationServices notificationServices;
+
     private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
     public UserServices(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder,
-                        UserLogServices uls){
+                        UserLogServices uls, NotificationServices notificationServices){
         this.uls = uls;
         this.userRepository = userRepository;
         this.passwordEncoder = bCryptPasswordEncoder;
+        this.notificationServices = notificationServices;
     }
 
     //Create new account
@@ -39,7 +40,7 @@ public class UserServices {
         if(userRepository.findUserByAccount(account) == null){
             User user = new User(account, name, passwordEncoder.encode(password), dob, email);
             userRepository.insert(user);
-            uls.writeLog(user.getId(), UserState.CREATED, "Tạo mới");
+            uls.writeLog(user.getAccount(), UserState.CREATED, "Tạo mới");
         }else {
             throw new Exception(account + " already exists");
         }
@@ -62,6 +63,11 @@ public class UserServices {
             }
         }
         return map;
+    }
+
+    public int countUserByStatus(UserState state){
+        int count = userRepository.countAllByStatus(state);
+        return count;
     }
 
     public Map<String, String> getUserBasicInfo(String account){
@@ -92,6 +98,8 @@ public class UserServices {
             user.setStatus(UserState.BANNED);
             uls.writeLog(user.getId(), UserState.BANNED, note);
             userRepository.save(user);
+            notificationServices.sendNotification(account, "Tài khoản của bạn đã bị khoá vì: "+note, "Tài khoản", NotificationType.BAD);
+            uls.writeLog(user.getAccount(), UserState.BANNED, note);
             return true;
         }
         return false;
@@ -103,6 +111,9 @@ public class UserServices {
         if(user != null){
             user.setStatus(UserState.ACTIVE);
             uls.writeLog(user.getId(), UserState.UNBANNED, "");
+            notificationServices.sendNotification(account, "Tài khoản của bạn đã được mở khoá", "Tài khoản", NotificationType.GOOD);
+
+            uls.writeLog(user.getAccount(), UserState.UNBANNED, "Tài khoản được mở khoá");
         }
         return false;
     }
@@ -116,6 +127,11 @@ public class UserServices {
             userRepository.save(user);
             return true;
         }else throw new Exception(account + " does not exist");
+    }
+
+    public ArrayList<String> getRecentChat(String account){
+        User user = userRepository.findUserByAccount(account);
+        return user.getRecentChat();
     }
 
 

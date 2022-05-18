@@ -33,6 +33,22 @@ public class ScheduleController {
         return new ResponseEntity<>(map, HttpStatus.OK);
     }
 
+    //get các schedule sau mốc thời gian
+    @GetMapping("/schedule/get/before/{timestamp}/{page}")
+    public ResponseEntity<Map<String, Schedule>> getBefore(@PathVariable("timestamp") String timestamp, @PathVariable("page") String page){
+        Map<String, Schedule> map = ss.getBefore(Long.parseLong(timestamp), Integer.parseInt(page));
+
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
+
+    //get các schedule trước mốc thời gian
+    @GetMapping("/schedule/get/after/{timestamp}/{page}")
+    public ResponseEntity<Map<String, Schedule>> getAfter(@PathVariable("timestamp") String timestamp, @PathVariable("page") String page){
+        Map<String, Schedule> map = ss.getAfter(Long.parseLong(timestamp), Integer.parseInt(page));
+
+        return new ResponseEntity<>(map, HttpStatus.OK);
+    }
+
     //get giữa 2 mốc thời gian millisecond
     @GetMapping("/schedule/get/filter/{start}/{end}/{page}")
     public ResponseEntity<Map<String, Schedule>> getBetween(@PathVariable("start") String start,

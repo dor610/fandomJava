@@ -70,13 +70,6 @@ public class PostController {
         int count = postServices.countPostByState(PostState.LOCKED);
         return new ResponseEntity<>(count, HttpStatus.OK);
     }
-    //get pending posts, 10 per time //
-    @GetMapping("/post/pending/{page}")
-    public ResponseEntity<Map<String, Post>> getPendingPost(@PathVariable("page") String pageStr){
-        int page = Integer.parseInt(pageStr);
-        Map<String, Post> posts = postServices.getPendingPosts(page);
-        return new ResponseEntity<>(posts, HttpStatus.OK);
-    }
 
     //count pending post by author
     @GetMapping("/post/pending/count/{author}")
@@ -104,12 +97,30 @@ public class PostController {
     }
 
 
+    //get pending posts, 10 per time //
+    @GetMapping("/post/pending/{page}")
+    public ResponseEntity<Map<String, Post>> getPendingPost(@PathVariable("page") String pageStr){
+        int page = Integer.parseInt(pageStr);
+        Map<String, Post> posts = postServices.getPendingPosts(page);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
 
     //get locked posts, 10 per time
     @GetMapping("/post/locked/{page}") //
     public ResponseEntity<Map<String,Post>> getLockedPost(@PathVariable("page") String pageStr){
         int page = Integer.parseInt(pageStr);
         Map<String, Post> posts = postServices.getLockedPosts(page);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+    @GetMapping("/post/approved/{page}")
+    public ResponseEntity<Map<String, Post>> getApprovedPost(@PathVariable("page") String page){
+        Map<String, Post> posts = postServices.getApprovedPosts(Integer.parseInt(page));
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
+    @GetMapping("/post/removed/{page}")
+    public ResponseEntity<Map<String, Post>> getRemovedPost(@PathVariable("page") String page){
+        Map<String,Post> posts = postServices.getRemovedPosts(Integer.parseInt(page));
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 

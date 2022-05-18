@@ -14,7 +14,7 @@ import java.util.*;
 
 public class TokenAuthenticationService {
 
-    static final long EXPIRATIONTIME = 5*24*60*60*1000; // 10 days
+    static final long EXPIRATIONTIME = 5*24*60*60*1000; // 5 days
 
     static final String SECRET = "dsfsadAjghB";
 

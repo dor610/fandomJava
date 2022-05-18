@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -26,11 +27,16 @@ public class UserLogServices {
         ulr.save(pl);
     }
 
-    public Map<String, UserLog> getPostLog(String id, UserState state, int page){
-        Pageable pageable = PageRequest.of(page, 10);
-        Page<UserLog> plp = ulr.getByUserIdAndState(id, state, pageable);
+    public UserLog getLastState(String account, UserState state){
+        List<UserLog> list = ulr.getByUserIdAndState(account, state);
+        if(list.size() >0) return  list.get(0);
+        return null;
+    }
+
+    public Map<String, UserLog> getPostLog(String id, UserState state){
+        List<UserLog> plp = ulr.getByUserIdAndState(id, state);
         Map<String, UserLog> map = new LinkedHashMap<>();
-        for(UserLog pl: plp.getContent()){
+        for(UserLog pl: plp){
             map.put(pl.getId(), pl);
         }
 

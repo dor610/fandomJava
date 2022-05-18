@@ -26,6 +26,6 @@ public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/fetch-news").setAllowedOrigins("*").withSockJS().setInterceptors(handshakeInterceptor).setSupressCors(true);
+        registry.addEndpoint("/fandom").setAllowedOriginPatterns("*").withSockJS().setInterceptors(handshakeInterceptor).setSupressCors(true);
     }
 }

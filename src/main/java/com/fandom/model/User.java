@@ -70,12 +70,8 @@ public class User {
     }
 
     public void addRecentChat(String account){
-        if(recentChat.size() < 7){
-            recentChat.add(account);
-        }else {
-            recentChat.remove(0);
-            recentChat.add(account);
-        }
+        recentChat.remove(account);
+        recentChat.add(0, account);
     }
 
     public String getId() {
@@ -156,5 +152,13 @@ public class User {
 
     public void setStatus(UserState status) {
         this.status = status;
+    }
+
+    public long getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(long createdDate) {
+        this.createdDate = createdDate;
     }
 }

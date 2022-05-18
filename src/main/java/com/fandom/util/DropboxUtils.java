@@ -54,6 +54,10 @@ public class DropboxUtils {
         }
     }
 
+    public static void deleteFile(String path) throws DbxException {
+        DropboxUtils.client.files().deleteV2(path);
+    }
+
     public static String convertToRAWLink(String sharedLink){
         String rawLink = sharedLink.substring(0, sharedLink.length()-4)+"raw=1";
         return rawLink;

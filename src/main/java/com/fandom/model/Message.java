@@ -14,7 +14,7 @@ public class Message {
     private String chatId;
     private String sender;
     private String recipient;
-    private long timeStamp;
+    private long timestamp;
     private String message;
     private Media[] images;
     private MessageState senderState;
@@ -24,14 +24,14 @@ public class Message {
 
     public Message(){}
 
-    public Message(String id, String chatId, String sender, String recipient, Media[] images, long timeStamp, String message,
+    public Message(String id, String chatId, String sender, String recipient, Media[] images, long timestamp, String message,
                    MessageState senderState, MessageState recipientState, PostType messageType, MessageType type) {
         this.id = id;
         this.chatId = chatId;
         this.sender = sender;
         this.images = images;
         this.recipient = recipient;
-        this.timeStamp = timeStamp;
+        this.timestamp = timestamp;
         this.message = message;
         this.senderState = senderState;
         this.recipientState = recipientState;
@@ -45,12 +45,16 @@ public class Message {
         this.chatId = chatId;
         this.sender = sender;
         this.recipient = recipient;
-        this.timeStamp = System.currentTimeMillis();
+        this.timestamp = System.currentTimeMillis();
         this.message = message;
         this.messageType = PostType.TEXT;
         this.senderState = MessageState.SENT;
         this.recipientState = MessageState.RECEIVED;
         this.type = MessageType.MESSAGE;
+    }
+
+    public String toString(){
+        return  chatId+ "   " + sender+"   "+ recipient +"  "+ message;
     }
 
     public Message(String chatId, String sender, String recipient, String message, Media[] images){
@@ -59,12 +63,13 @@ public class Message {
         this.chatId = chatId;
         this.sender = sender;
         this.recipient = recipient;
-        this.timeStamp = System.currentTimeMillis();
+        this.timestamp = System.currentTimeMillis();
         this.message = message;
         this.messageType = PostType.IMAGE;
         this.senderState = MessageState.SENT;
         this.recipientState = MessageState.RECEIVED;
         this.type = MessageType.MESSAGE;
+        this.images = images;
     }
 
     //constructor for notification
@@ -76,6 +81,11 @@ public class Message {
         else chatId = recipient+sender;
 
         return chatId;
+    }
+
+    public void setId(){
+        ObjectId id = new ObjectId();
+        this.id = "message_"+id.toString();
     }
 
     public String getId() {
@@ -110,12 +120,12 @@ public class Message {
         this.recipient = recipient;
     }
 
-    public long getTimeStamp() {
-        return timeStamp;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setTimeStamp(long timeStamp) {
-        this.timeStamp = timeStamp;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getMessage() {
@@ -148,5 +158,21 @@ public class Message {
 
     public void setType(MessageType type) {
         this.type = type;
+    }
+
+    public Media[] getImages() {
+        return images;
+    }
+
+    public void setImages(Media[] images) {
+        this.images = images;
+    }
+
+    public PostType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(PostType messageType) {
+        this.messageType = messageType;
     }
 }

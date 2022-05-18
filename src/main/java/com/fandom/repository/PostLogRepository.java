@@ -22,6 +22,8 @@ public interface PostLogRepository extends MongoRepository<PostLog, String> {
 
     public List<PostLog> findByTimestampBetween(long start, long end);
 
+    @Query(value = "{'postId': ?0, 'state': ?1}", sort = "{'timestamp': -1}")
+    public List<PostLog> getLatestTimestampByPostIdAndState(String postId, PostState state);
 
 
     //Đếm số bài theo postId và state

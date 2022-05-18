@@ -1,13 +1,17 @@
 package com.fandom.controller;
 
 import com.fandom.model.User;
+import com.fandom.model.UserLog;
 import com.fandom.model.UserState;
+import com.fandom.services.UserLogServices;
 import com.fandom.services.UserServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,9 +20,11 @@ import java.util.Map;
 public class UserController {
 
     private UserServices userServices;
+    private UserLogServices userLogServices;
 
     @Autowired
-    public UserController(UserServices userServices){
+    public UserController(UserServices userServices, UserLogServices userLogServices){
+        this.userLogServices = userLogServices;
         this.userServices = userServices;
     }
 
@@ -55,7 +61,24 @@ public class UserController {
         Map<String,User> list = userServices.getUserByState(UserState.BANNED, page);
         if(list == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(list, HttpStatus.OK);
+    }
 
+    @GetMapping("/user/count/all")
+    public ResponseEntity<Integer> countActiveUser(){
+        int count = userServices.countUserByStatus(UserState.ACTIVE);
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/count/banned")
+    public ResponseEntity<Integer> countBannedUser(){
+        int count = userServices.countUserByStatus(UserState.BANNED);
+        return  new ResponseEntity<>(count, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/all/{page}")
+    public ResponseEntity<Map<String, User>> getAllUser(@PathVariable("page") String page){
+        Map<String, User> list = userServices.getUserByState(UserState.ACTIVE, Integer.parseInt(page));
+        return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
     @GetMapping("/user/isExist/{account}") //
@@ -71,11 +94,23 @@ public class UserController {
         else return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @GetMapping("/user/message/{account}/recentChat")
+    public ResponseEntity<ArrayList<String>> getRecentChat(@PathVariable("account") String account){
+        return new ResponseEntity<>(userServices.getRecentChat(account), HttpStatus.OK);
+    }
 
     //delete a user by account, admin right is required
     @PostMapping("/deleteAccount")
     public boolean deleteAccount(@RequestParam("account") String account, @RequestParam("note") String note) throws Exception {
         return userServices.deleteAccount(account, note);
+    }
+
+
+    @GetMapping("/user/log/get/banned/{account}")
+    public ResponseEntity<UserLog> getLastStateTimestamp(@PathVariable("account") String account){
+        System.out.println(account);
+        UserLog ul = userLogServices.getLastState(account, UserState.BANNED);
+        return new ResponseEntity<>(ul, HttpStatus.OK);
     }
 
 }

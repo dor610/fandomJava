@@ -57,11 +57,11 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.cors().configurationSource(corsConfigurationSource());
 
-        http.authorizeRequests().antMatchers("/", "/createAccount", "/login").permitAll();
+        http.authorizeRequests().antMatchers("/", "/createAccount", "/login", "/fandom/**").permitAll();
 
         http.authorizeRequests().antMatchers(HttpMethod.GET, "/post/**",
                                             "/interaction/**", "/comment/**",
-                                            "/user/basic/**", "/schedule/**").permitAll();
+                                            "/user/basic/**", "/schedule/**",  "/profile/**", "/message/**").permitAll();
 
         http.authorizeRequests().antMatchers("/admin").hasAuthority(Role.ADMIN.name());
         http.authorizeRequests().antMatchers("/user").hasAnyAuthority(Role.MEMBER.name(), Role.ADMIN.name());

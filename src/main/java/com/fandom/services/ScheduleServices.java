@@ -36,6 +36,13 @@ public class ScheduleServices {
         return listToMap(list.getContent());
     }
 
+    public Map<String, Schedule> getAfter( long timestamp, int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Schedule> list = sr.getUpcoming(timestamp, pageable);
+        return listToMap(list.getContent());
+    }
+
+
     public Map<String, Schedule> getBetween( long start, long end, int page){
         Pageable pageable = PageRequest.of(page, 10);
         Page<Schedule> list = sr.findScheduleByTimestampBetween(start, end, pageable);
@@ -48,6 +55,12 @@ public class ScheduleServices {
         Page<Schedule> sp = sr.getFinished(System.currentTimeMillis(), pageable);
 
         return listToMap(sp.getContent());
+    }
+
+    public Map<String, Schedule> getBefore( long timestamp, int page){
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Schedule> list = sr.getFinished(timestamp, pageable);
+        return listToMap(list.getContent());
     }
 
     public Map<String, Schedule> getSchedule(){

@@ -22,4 +22,5 @@ public interface ScheduleRepository extends MongoRepository<Schedule, String> {
 
     public Page<Schedule> findScheduleByTimestampBetween(long start, long end, Pageable pageable);
 
+
 }

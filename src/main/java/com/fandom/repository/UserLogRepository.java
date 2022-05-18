@@ -7,8 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.util.List;
+
 public interface UserLogRepository extends MongoRepository<UserLog, String> {
 
-    @Query(value = "{'userId': ?0, 'state': ?1}", sort = "{'timestamp': -1}")
-    public Page<UserLog> getByUserIdAndState(String userId, UserState state, Pageable pageable);
+    @Query(value = "{'account': ?0, 'state': ?1}", sort = "{'timestamp': -1}")
+    public List<UserLog> getByUserIdAndState(String userId, UserState state);
+
 }
